@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">اسنیفر</string>
+
+    <string name="today">امروز</string>
+    <string name="download">دانلود</string>
+    <string name="upload">آپلود</string>
+    <string name="total">مجموع</string>
+    <string name="past_7_days">۷ روز گذشته</string>
+    <string name="no_data">داده‌ای وجود ندارد</string>
+
+    <string name="more">بیشتر</string>
+    <string name="status_bar">نوار وضعیت</string>
+    <string name="speed">سرعت</string>
+    <string name="boot">بوت</string>
+    <string name="boot_subtitle_on">شروع خودکار پس از راه‌اندازی مجدد</string>
+    <string name="boot_subtitle_off">فقط شروع دستی</string>
+    <string name="language">زبان</string>
+
+    <string name="total_speed">سرعت کل</string>
+    <string name="download_speed">سرعت دانلود</string>
+    <string name="upload_speed">سرعت آپلود</string>
+
+    <string name="bits">بیت بر ثانیه</string>
+    <string name="bytes">بایت بر ثانیه</string>
+
+    <string name="kb">کیلوبایت</string>
+    <string name="mb">مگابایت</string>
+    <string name="gb">گیگابایت</string>
+
+    <string name="english">انگلیسی</string>
+    <string name="farsi">فارسی</string>
+    <string name="system">پیش‌فرض سیستم</string>
+
+    <string name="channel_name">سرعت شبکه</string>
+    <string name="channel_description">سرعت فعلی شبکه را نمایش می‌دهد</string>
+    <string name="notification">دانلود: %1$s  آپلود: %2$s</string>
+
+    <string name="kb_s">کیلوبایت/ثانیه</string>
+    <string name="mb_s">مگابایت/ثانیه</string>
+    <string name="gb_s">گیگابایت/ثانیه</string>
+    <string name="kbs">کیلوبیت/ثانیه</string>
+    <string name="mbs">مگابیت/ثانیه</string>
+    <string name="gbs">گیگابیت/ثانیه</string>
+
+    <string name="start">شروع</string>
+    <string name="stop">توقف</string>
+    <string name="start_monitoring">شروع مانیتورینگ</string>
+    <string name="stop_monitoring">توقف مانیتورینگ</string>
+
+    <string name="cancel">لغو</string>
+    <string name="back">بازگشت</string>
+</resources>

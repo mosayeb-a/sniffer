@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notification_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="18dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <RelativeLayout
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:alpha="0.9">
+
+        <TextView
+            android:id="@+id/notificationSpeedValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="-3dp"
+            android:textAlignment="center"
+            android:textSize="12dp"
+            android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#000000"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/notificationSpeedUnit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="-2dp"
+            android:textAlignment="center"
+            android:textSize="7dp"
+            android:textAppearance="@style/TextAppearance.Compat.Notification.Title"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:text="B/s" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/notificationText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        style="@style/TextAppearance.Compat.Notification.Info"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:text="↓ 0 B/s  ↑ 0 B/s"
+        android:layout_weight="1" />
+
+</LinearLayout>

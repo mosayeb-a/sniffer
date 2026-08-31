@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">Sniffer</string>
+
+    <string name="today">TODAY</string>
+    <string name="download">DOWNLOAD</string>
+    <string name="upload">UPLOAD</string>
+    <string name="total">Total</string>
+    <string name="past_7_days">PAST 7 DAYS</string>
+    <string name="no_data">No data</string>
+
+    <string name="more">More</string>
+    <string name="status_bar">Status Bar</string>
+    <string name="speed">Speed</string>
+    <string name="boot">Boot</string>
+    <string name="boot_subtitle_on">Auto-start after reboot</string>
+    <string name="boot_subtitle_off">Manual start only</string>
+    <string name="language">Language</string>
+
+    <string name="total_speed">Total Speed</string>
+    <string name="download_speed">Download Speed</string>
+    <string name="upload_speed">Upload Speed</string>
+
+    <string name="bits">Bits per second</string>
+    <string name="bytes">Bytes per second</string>
+
+    <string name="kb">KB</string>
+    <string name="mb">MB</string>
+    <string name="gb">GB</string>
+
+    <string name="english">English</string>
+    <string name="farsi">Farsi</string>
+    <string name="system">System Default</string>
+
+    <string name="channel_name">Network Speed</string>
+    <string name="channel_description">Shows current network speed</string>
+    <string name="notification">Download: %1$s  Upload: %2$s</string>
+
+    <string name="kb_s">KB/s</string>
+    <string name="mb_s">MB/s</string>
+    <string name="gb_s">GB/s</string>
+    <string name="kbs">Kb/s</string>
+    <string name="mbs">Mb/s</string>
+    <string name="gbs">Gb/s</string>
+
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="start_monitoring">Start Monitoring</string>
+    <string name="stop_monitoring">Stop Monitoring</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="back">Back</string>
+</resources>
