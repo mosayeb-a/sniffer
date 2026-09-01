@@ -49,4 +49,8 @@
 
     <string name="cancel">لغو</string>
     <string name="back">بازگشت</string>
+
+    <string name="notification_permission_title">مجوز نوتیفیکیشن الزامی است</string>
+    <string name="notification_permission_message">برای نمایش سرعت لحظه‌ای اینترنت در نوار وضعیت، به مجوز نمایش نوتیفیکیشن نیاز داریم.</string>
+    <string name="notification_permission_grant">اعطای مجوز</string>
 </resources>

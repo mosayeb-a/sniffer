@@ -49,4 +49,8 @@
 
     <string name="cancel">Cancel</string>
     <string name="back">Back</string>
+
+    <string name="notification_permission_title">Notification Permission Required</string>
+    <string name="notification_permission_message">To show real-time speed in your status bar, we need your permission to display notifications.</string>
+    <string name="notification_permission_grant">Grant Permission</string>
 </resources>
