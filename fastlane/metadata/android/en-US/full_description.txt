@@ -1,0 +1,1 @@
+Sniffer is a lightweight Android application that monitors your network speed and data usage in real-time. See your download and upload speeds in the status bar, track daily and weekly usage, and stay informed about your network activity.
