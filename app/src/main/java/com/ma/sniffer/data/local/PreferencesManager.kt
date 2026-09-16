@@ -50,15 +50,12 @@ class PreferencesManager(
     }
 
     val languageFlow: Flow<Language> = dataStore.data.map { preferences ->
-        val savedLanguage = preferences[KEY_LANGUAGE]
-        val result = if (savedLanguage != null) {
-            Language.fromCode(savedLanguage)
-        } else {
-            if (Locale.getDefault().language == "fa") Language.FARSI else Language.ENGLISH
+        when (val savedLanguage = preferences[KEY_LANGUAGE]) {
+            null -> Language.SYSTEM
+            Language.SYSTEM.code -> Language.SYSTEM
+            else -> Language.fromCode(savedLanguage)
         }
-        result
     }
-
 
     suspend fun setRunning(enabled: Boolean) {
         dataStore.edit { preferences ->
