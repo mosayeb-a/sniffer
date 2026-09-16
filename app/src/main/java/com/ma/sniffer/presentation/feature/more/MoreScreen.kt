@@ -1,6 +1,11 @@
 package com.ma.sniffer.presentation.feature.more
 
+import android.content.Context
+import android.content.Intent
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,18 +23,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.BatteryAlert
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +51,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ma.sniffer.R
 import com.ma.sniffer.domain.model.Language
 import com.ma.sniffer.domain.model.SpeedUnit
@@ -58,10 +71,34 @@ fun MoreScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     val statusBarDisplay by viewModel.statusBarDisplay.collectAsState()
     val speedUnit by viewModel.speedUnit.collectAsState()
     val startOnBoot by viewModel.startOnBoot.collectAsState()
     val language by viewModel.language.collectAsState()
+
+    var isBatteryOptimizationDisabled by remember { mutableStateOf<Boolean?>(null) }
+    var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
+
+    fun refreshBatteryState() {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        isBatteryOptimizationDisabled =
+            pm.isIgnoringBatteryOptimizations(context.packageName)
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                refreshBatteryState()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        refreshBatteryState()
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     var showStatusBarChoiceDialog by remember { mutableStateOf(false) }
     var showSpeedUnitDialog by remember { mutableStateOf(false) }
@@ -189,9 +226,11 @@ fun MoreScreen(
             SettingsItem(
                 icon = Icons.Rounded.PowerSettingsNew,
                 title = stringResource(R.string.boot),
-                subtitle = if (startOnBoot == true) stringResource(R.string.boot_subtitle_on) else stringResource(
-                    R.string.boot_subtitle_off
-                ),
+                subtitle = if (startOnBoot == true) {
+                    stringResource(R.string.boot_subtitle_on)
+                } else {
+                    stringResource(R.string.boot_subtitle_off)
+                },
                 onClick = {
                     if (startOnBoot != null) {
                         viewModel.setStartOnBoot(!(startOnBoot!!))
@@ -216,6 +255,34 @@ fun MoreScreen(
                             uncheckedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                             uncheckedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    )
+                }
+            )
+        }
+
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.BatteryAlert,
+                title = stringResource(R.string.battery_optimization),
+                subtitle = when (isBatteryOptimizationDisabled) {
+                    true -> stringResource(R.string.battery_optimization_subtitle_on)
+                    false -> stringResource(R.string.battery_optimization_subtitle_off)
+                    null -> ""
+                },
+                onClick = {
+                    when (isBatteryOptimizationDisabled) {
+                        false -> showBatteryOptimizationDialog = true
+                        true -> openBatteryOptimizationSettings(context)
+                        null -> Unit
+                    }
+                },
+                enabled = isBatteryOptimizationDisabled != null,
+                trailing = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             )
@@ -267,5 +334,58 @@ fun MoreScreen(
             onDismiss = { showLanguageDialog = false },
             displayName = { stringResource(it!!.label) }
         )
+    }
+
+    if (showBatteryOptimizationDialog) {
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
+            onDismissRequest = { showBatteryOptimizationDialog = false },
+            title = {
+                Text(stringResource(R.string.battery_optimization_dialog_title))
+            },
+            text = {
+                Text(stringResource(R.string.battery_optimization_dialog_message))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showBatteryOptimizationDialog = false
+                        requestIgnoreBatteryOptimization(context)
+                    }
+                ) {
+                    Text(stringResource(R.string.battery_optimization_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showBatteryOptimizationDialog = false }
+                ) {
+                    Text(stringResource(R.string.battery_optimization_dialog_cancel))
+                }
+            }
+        )
+    }
+}
+
+private fun requestIgnoreBatteryOptimization(context: Context) {
+    try {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = "package:${context.packageName}".toUri()
+        }
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        openBatteryOptimizationSettings(context)
+    }
+}
+
+private fun openBatteryOptimizationSettings(context: Context) {
+    try {
+        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = "package:${context.packageName}".toUri()
+        }
+        context.startActivity(intent)
     }
 }
