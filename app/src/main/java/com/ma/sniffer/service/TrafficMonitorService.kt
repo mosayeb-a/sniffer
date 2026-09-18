@@ -6,9 +6,11 @@ import android.content.pm.ServiceInfo
 import android.net.TrafficStats
 import android.os.Build
 import android.os.IBinder
-import com.ma.sniffer.data.local.PreferencesManager
 import com.ma.sniffer.data.local.NetworkUsage
+import com.ma.sniffer.data.local.PreferencesManager
 import com.ma.sniffer.domain.SpeedCalculator
+import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.Speed
 import com.ma.sniffer.domain.model.SpeedUnit
 import com.ma.sniffer.domain.model.StatusBarDisplay
@@ -22,7 +24,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class TrafficMonitorService : Service() {
     companion object {
-        private const val SAVE_INTERVAL = 10000L
+        private const val SAVE_INTERVAL = 5000L
     }
 
     private val preferences: PreferencesManager by inject()
@@ -34,6 +36,8 @@ class TrafficMonitorService : Service() {
 
     private var currentStatusBarDisplay = StatusBarDisplay.TOTAL
     private var currentSpeedUnit = SpeedUnit.BYTES
+    private var currentNotificationTheme = NotificationTheme.SYSTEM
+    private var currentNotificationContent = NotificationContent.DOWNLOAD_UPLOAD
 
     private var lastSavedRx = 0L
     private var lastSavedTx = 0L
@@ -48,6 +52,8 @@ class TrafficMonitorService : Service() {
         runBlocking {
             currentStatusBarDisplay = preferences.statusBarDisplayFlow.first()
             currentSpeedUnit = preferences.speedUnitFlow.first()
+            currentNotificationTheme = preferences.notificationThemeFlow.first()
+            currentNotificationContent = preferences.notificationContentFlow.first()
         }
 
         notificationManager = NotificationManager(this)
@@ -90,6 +96,30 @@ class TrafficMonitorService : Service() {
                     }
                 }
         }
+
+        serviceScope.launch {
+            preferences.notificationThemeFlow
+                .distinctUntilChanged()
+                .collect { theme ->
+                    currentNotificationTheme = theme
+                    if (updateJob?.isActive == true) {
+                        val speed = speedCalculator.calculateSpeed()
+                        updateNotification(speed)
+                    }
+                }
+        }
+
+        serviceScope.launch {
+            preferences.notificationContentFlow
+                .distinctUntilChanged()
+                .collect { content ->
+                    currentNotificationContent = content
+                    if (updateJob?.isActive == true) {
+                        val speed = speedCalculator.calculateSpeed()
+                        updateNotification(speed)
+                    }
+                }
+        }
     }
 
     private fun startMonitoring() {
@@ -106,13 +136,18 @@ class TrafficMonitorService : Service() {
         runBlocking {
             currentStatusBarDisplay = preferences.statusBarDisplayFlow.first()
             currentSpeedUnit = preferences.speedUnitFlow.first()
+            currentNotificationTheme = preferences.notificationThemeFlow.first()
+            currentNotificationContent = preferences.notificationContentFlow.first()
         }
 
         try {
             val notification = notificationManager.createInitialNotification(
                 currentStatusBarDisplay,
-                currentSpeedUnit
+                currentSpeedUnit,
+                currentNotificationTheme,
+                currentNotificationContent
             )
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(
                     NotificationManager.NOTIFICATION_ID,
@@ -177,7 +212,9 @@ class TrafficMonitorService : Service() {
             notificationManager.updateNotification(
                 speed,
                 currentStatusBarDisplay,
-                currentSpeedUnit
+                currentSpeedUnit,
+                currentNotificationTheme,
+                currentNotificationContent
             )
         } catch (_: Exception) {
         }

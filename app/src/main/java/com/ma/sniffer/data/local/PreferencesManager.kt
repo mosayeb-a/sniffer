@@ -6,11 +6,12 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ma.sniffer.domain.model.Language
+import com.ma.sniffer.domain.model.NotificationTheme
+import com.ma.sniffer.domain.model.NotificationContent
 import com.ma.sniffer.domain.model.SpeedUnit
 import com.ma.sniffer.domain.model.StatusBarDisplay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.util.Locale
 
 class PreferencesManager(
     private val dataStore: DataStore<Preferences>
@@ -21,6 +22,8 @@ class PreferencesManager(
         private val KEY_SPEED_UNIT = stringPreferencesKey("speed_unit")
         private val KEY_START_ON_BOOT = booleanPreferencesKey("start_on_boot")
         private val KEY_LANGUAGE = stringPreferencesKey("language")
+        private val KEY_NOTIFICATION_THEME = stringPreferencesKey("notification_theme")
+        private val KEY_NOTIFICATION_CONTENT = stringPreferencesKey("notification_content")
     }
 
     val isRunningFlow: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -57,6 +60,14 @@ class PreferencesManager(
         }
     }
 
+    val notificationThemeFlow: Flow<NotificationTheme> = dataStore.data.map { preferences ->
+        NotificationTheme.fromCode(preferences[KEY_NOTIFICATION_THEME])
+    }
+
+    val notificationContentFlow: Flow<NotificationContent> = dataStore.data.map { preferences ->
+        NotificationContent.fromCode(preferences[KEY_NOTIFICATION_CONTENT])
+    }
+
     suspend fun setRunning(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_MONITORING] = enabled
@@ -85,5 +96,13 @@ class PreferencesManager(
         dataStore.edit { preferences ->
             preferences[KEY_LANGUAGE] = language.code
         }
+    }
+
+    suspend fun setNotificationTheme(theme: NotificationTheme) {
+        dataStore.edit { it[KEY_NOTIFICATION_THEME] = theme.code }
+    }
+
+    suspend fun setNotificationContent(content: NotificationContent) {
+        dataStore.edit { it[KEY_NOTIFICATION_CONTENT] = content.code }
     }
 }

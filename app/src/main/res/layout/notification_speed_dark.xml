@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:paddingHorizontal="16dp"
     android:paddingVertical="10dp"
-    android:background="?android:attr/colorBackground">
+    android:background="#1C1C1E">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -19,7 +19,7 @@
             android:id="@+id/notificationSpeedValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="?android:attr/textColorPrimary"
+            android:textColor="#FFFFFF"
             android:textSize="22sp"
             android:textStyle="bold"
             tools:text="12" />
@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:textColor="?android:attr/textColorSecondary"
+            android:textColor="#9E9E9E"
             android:textSize="12sp"
             tools:text="MB/s" />
     </LinearLayout>
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:textColor="?android:attr/textColorSecondary"
+        android:textColor="#9E9E9E"
         android:textSize="12sp"
         tools:text="↓ 1.2 MB/s   ↑ 300 KB/s" />
 </LinearLayout>

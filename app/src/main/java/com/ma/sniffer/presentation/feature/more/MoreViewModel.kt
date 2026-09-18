@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ma.sniffer.data.local.PreferencesManager
 import com.ma.sniffer.domain.model.Language
+import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.SpeedUnit
 import com.ma.sniffer.domain.model.StatusBarDisplay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +29,12 @@ class MoreViewModel(
 
     private val _language = MutableStateFlow<Language?>(null)
     val language: StateFlow<Language?> = _language
+
+    private val _notificationTheme = MutableStateFlow<NotificationTheme?>(null)
+    val notificationTheme: StateFlow<NotificationTheme?> = _notificationTheme
+
+    private val _notificationContent = MutableStateFlow<NotificationContent?>(null)
+    val notificationContent: StateFlow<NotificationContent?> = _notificationContent
 
     init {
         viewModelScope.launch {
@@ -56,6 +64,17 @@ class MoreViewModel(
                     _language.update { lang }
                 }
         }
+
+        viewModelScope.launch {
+            dataStore.notificationThemeFlow.collectLatest { theme ->
+                _notificationTheme.update { theme }
+            }
+        }
+        viewModelScope.launch {
+            dataStore.notificationContentFlow.collectLatest { content ->
+                _notificationContent.update { content }
+            }
+        }
     }
 
     fun setStatusBarDisplay(display: StatusBarDisplay) {
@@ -80,5 +99,13 @@ class MoreViewModel(
         viewModelScope.launch {
             dataStore.setLanguage(lang)
         }
+    }
+
+    fun setNotificationTheme(theme: NotificationTheme) {
+        viewModelScope.launch { dataStore.setNotificationTheme(theme) }
+    }
+
+    fun setNotificationContent(content: NotificationContent) {
+        viewModelScope.launch { dataStore.setNotificationContent(content) }
     }
 }

@@ -23,8 +23,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.Notes
 import androidx.compose.material.icons.rounded.BatteryAlert
 import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Notes
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Visibility
@@ -57,6 +60,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ma.sniffer.R
 import com.ma.sniffer.domain.model.Language
+import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.SpeedUnit
 import com.ma.sniffer.domain.model.StatusBarDisplay
 import com.ma.sniffer.domain.model.label
@@ -77,6 +82,8 @@ fun MoreScreen(
     val speedUnit by viewModel.speedUnit.collectAsState()
     val startOnBoot by viewModel.startOnBoot.collectAsState()
     val language by viewModel.language.collectAsState()
+    val notificationTheme by viewModel.notificationTheme.collectAsState()
+    val notificationContent by viewModel.notificationContent.collectAsState()
 
     var isBatteryOptimizationDisabled by remember { mutableStateOf<Boolean?>(null) }
     var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
@@ -103,6 +110,8 @@ fun MoreScreen(
     var showStatusBarChoiceDialog by remember { mutableStateOf(false) }
     var showSpeedUnitDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showNotificationThemeDialog by remember { mutableStateOf(false) }
+    var showNotificationContentDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -224,6 +233,42 @@ fun MoreScreen(
 
         item {
             SettingsItem(
+                icon = Icons.Rounded.Palette,
+                title = stringResource(R.string.notification_theme),
+                subtitle = notificationTheme?.let { stringResource(it.label) } ?: "",
+                onClick = { if (notificationTheme != null) showNotificationThemeDialog = true },
+                enabled = notificationTheme != null,
+                trailing = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            )
+        }
+
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.Notes,
+                title = stringResource(R.string.notification_content),
+                subtitle = notificationContent?.let { stringResource(it.label) } ?: "",
+                onClick = { if (notificationContent != null) showNotificationContentDialog = true },
+                enabled = notificationContent != null,
+                trailing = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            )
+        }
+
+        item {
+            SettingsItem(
                 icon = Icons.Rounded.PowerSettingsNew,
                 title = stringResource(R.string.boot),
                 subtitle = if (startOnBoot == true) {
@@ -332,6 +377,34 @@ fun MoreScreen(
                 }
             },
             onDismiss = { showLanguageDialog = false },
+            displayName = { stringResource(it!!.label) }
+        )
+    }
+
+    if (showNotificationThemeDialog && notificationTheme != null) {
+        SelectionDialog(
+            title = stringResource(R.string.notification_theme),
+            options = NotificationTheme.entries,
+            selectedOption = notificationTheme,
+            onOptionSelected = { selected ->
+                viewModel.setNotificationTheme(selected!!)
+                showNotificationThemeDialog = false
+            },
+            onDismiss = { showNotificationThemeDialog = false },
+            displayName = { stringResource(it!!.label) }
+        )
+    }
+
+    if (showNotificationContentDialog && notificationContent != null) {
+        SelectionDialog(
+            title = stringResource(R.string.notification_content),
+            options = NotificationContent.entries,
+            selectedOption = notificationContent,
+            onOptionSelected = { selected ->
+                viewModel.setNotificationContent(selected!!)
+                showNotificationContentDialog = false
+            },
+            onDismiss = { showNotificationContentDialog = false },
             displayName = { stringResource(it!!.label) }
         )
     }

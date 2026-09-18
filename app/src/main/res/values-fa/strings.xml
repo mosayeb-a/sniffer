@@ -33,7 +33,7 @@
 
     <string name="channel_name">سرعت شبکه</string>
     <string name="channel_description">سرعت فعلی شبکه را نمایش می‌دهد</string>
-    <string name="notification">دانلود: %1$s  آپلود: %2$s</string>
+    <string name="notification">دانلود %1$s  آپلود %2$s</string>
 
     <string name="kb_s">کیلوبایت/ثانیه</string>
     <string name="mb_s">مگابایت/ثانیه</string>
@@ -53,4 +53,24 @@
     <string name="notification_permission_title">مجوز نوتیفیکیشن الزامی است</string>
     <string name="notification_permission_message">برای نمایش سرعت لحظه‌ای اینترنت در نوار وضعیت، به مجوز نمایش نوتیفیکیشن نیاز داریم.</string>
     <string name="notification_permission_grant">اعطای مجوز</string>
+
+    <string name="battery_optimization">بهینه‌سازی باتری</string>
+    <string name="battery_optimization_subtitle_on">غیرفعال</string>
+    <string name="battery_optimization_subtitle_off">فعال</string>
+    <string name="battery_optimization_dialog_title">بهینه‌سازی باتری</string>
+    <string name="battery_optimization_dialog_message">برای اینکه نمایشگر ترافیک به‌طور پایدار در پس‌زمینه اجرا شود، لطفاً بهینه‌سازی باتری را برای این برنامه غیرفعال کنید.</string>
+    <string name="battery_optimization_dialog_confirm">باز کردن تنظیمات</string>
+    <string name="battery_optimization_dialog_cancel">لغو</string>
+
+    <string name="notification_theme">پوسته اعلان</string>
+    <string name="notification_theme_system">پیش‌فرض سیستم</string>
+    <string name="notification_theme_light">روشن</string>
+    <string name="notification_theme_dark">تیره</string>
+
+    <string name="notification_content">محتوای اعلان</string>
+    <string name="notification_content_default">دانلود | آپلود</string>
+    <string name="notification_content_short">دان | آپ</string>
+    <string name="notification_content_arrows">↓ | ↑</string>
+
+    <string name="notification_short">دان %1$s   آپ %2$s</string>
 </resources>

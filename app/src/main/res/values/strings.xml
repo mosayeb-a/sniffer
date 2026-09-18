@@ -53,4 +53,24 @@
     <string name="notification_permission_title">Notification Permission Required</string>
     <string name="notification_permission_message">To show real-time speed in your status bar, we need your permission to display notifications.</string>
     <string name="notification_permission_grant">Grant Permission</string>
+
+    <string name="battery_optimization">Battery optimization</string>
+    <string name="battery_optimization_subtitle_on">Disabled</string>
+    <string name="battery_optimization_subtitle_off">Enabled</string>
+    <string name="battery_optimization_dialog_title">Battery optimization</string>
+    <string name="battery_optimization_dialog_message">To ensure the traffic monitor keeps running reliably in the background, please disable battery optimization for this app.</string>
+    <string name="battery_optimization_dialog_confirm">Open settings</string>
+    <string name="battery_optimization_dialog_cancel">Cancel</string>
+
+    <string name="notification_theme">Notification theme</string>
+    <string name="notification_theme_system">System default</string>
+    <string name="notification_theme_light">Light</string>
+    <string name="notification_theme_dark">Dark</string>
+
+    <string name="notification_content">Notification content</string>
+    <string name="notification_content_default">Download | Upload</string>
+    <string name="notification_content_short">Down | Up</string>
+    <string name="notification_content_arrows">↓ | ↑</string>
+
+    <string name="notification_short">Down %1$s   Up %2$s</string>
 </resources>
