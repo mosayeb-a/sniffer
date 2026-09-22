@@ -15,6 +15,7 @@ import com.ma.sniffer.MainActivity
 import com.ma.sniffer.R
 import com.ma.sniffer.domain.model.NetworkValue
 import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationPriority
 import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.Speed
 import com.ma.sniffer.domain.model.SpeedUnit
@@ -28,10 +29,16 @@ class NotificationManager(
     companion object {
         const val NOTIFICATION_ID = 1001
         const val CHANNEL_ID = "speed_channel"
+
+        private const val FIXED_TIMESTAMP = 0L
     }
 
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+
+    private var cachedBuilder: NotificationCompat.Builder? = null
+    private var cachedPendingIntent: PendingIntent? = null
+    private var cachedPriority: NotificationPriority? = null
 
     init {
         createNotificationChannel()
@@ -59,14 +66,16 @@ class NotificationManager(
         statusBarDisplay: StatusBarDisplay,
         speedUnit: SpeedUnit,
         theme: NotificationTheme,
-        content: NotificationContent
+        content: NotificationContent,
+        priority: NotificationPriority
     ): Notification {
         val notification = buildNotification(
             Speed.ZERO,
             statusBarDisplay,
             speedUnit,
             theme,
-            content
+            content,
+            priority
         )
         notificationManager.notify(NOTIFICATION_ID, notification)
         return notification
@@ -77,14 +86,25 @@ class NotificationManager(
         statusBarDisplay: StatusBarDisplay,
         speedUnit: SpeedUnit,
         theme: NotificationTheme,
-        content: NotificationContent
+        content: NotificationContent,
+        priority: NotificationPriority
     ) {
-        val notification = buildNotification(speed, statusBarDisplay, speedUnit, theme, content)
+        val notification = buildNotification(
+            speed,
+            statusBarDisplay,
+            speedUnit,
+            theme,
+            content,
+            priority
+        )
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
     fun stopNotification() {
         notificationManager.cancel(NOTIFICATION_ID)
+        cachedBuilder = null
+        cachedPendingIntent = null
+        cachedPriority = null
     }
 
     private fun buildNotification(
@@ -92,7 +112,8 @@ class NotificationManager(
         statusBarDisplay: StatusBarDisplay,
         speedUnit: SpeedUnit,
         theme: NotificationTheme,
-        content: NotificationContent
+        content: NotificationContent,
+        priority: NotificationPriority
     ): Notification {
         val useBits = speedUnit == SpeedUnit.BITS
 
@@ -130,16 +151,22 @@ class NotificationManager(
             R.layout.notification_speed_light
         }
 
-        val intent = Intent(themedContext, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        if (cachedPriority != priority) {
+            cachedBuilder = null
+            cachedPriority = priority
         }
 
-        val pendingIntent = PendingIntent.getActivity(
-            themedContext,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pendingIntent = cachedPendingIntent ?: run {
+            val intent = Intent(themedContext, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            PendingIntent.getActivity(
+                themedContext,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            ).also { cachedPendingIntent = it }
+        }
 
         val remoteViews = RemoteViews(themedContext.packageName, layoutRes).apply {
             setTextViewText(R.id.notificationSpeedValue, value)
@@ -148,18 +175,25 @@ class NotificationManager(
             setOnClickPendingIntent(R.id.notification_container, pendingIntent)
         }
 
-        return NotificationCompat.Builder(themedContext, CHANNEL_ID)
-            .setSmallIcon(BitmapGenerator.createSpeedIcon(value, unit))
-            .setCustomContentView(remoteViews)
-            .setCustomBigContentView(remoteViews)
+        val builder = cachedBuilder ?: NotificationCompat.Builder(themedContext, CHANNEL_ID)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(priority.toCompatPriority())
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setLocalOnly(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setSilent(true)
-            .build()
+            .setOnlyAlertOnce(true)
+            .setWhen(FIXED_TIMESTAMP)
+            .setShowWhen(false)
+            .also { cachedBuilder = it }
+
+        builder
+            .setSmallIcon(BitmapGenerator.createSpeedIcon(value, unit))
+            .setCustomContentView(remoteViews)
+            .setCustomBigContentView(remoteViews)
+
+        return builder.build()
     }
 
     private fun themedContext(theme: NotificationTheme): Context {
@@ -189,6 +223,13 @@ class NotificationManager(
 
         return context.createConfigurationContext(config)
     }
+}
+
+private fun NotificationPriority.toCompatPriority(): Int = when (this) {
+    NotificationPriority.LOW -> NotificationCompat.PRIORITY_LOW
+    NotificationPriority.DEFAULT -> NotificationCompat.PRIORITY_DEFAULT
+    NotificationPriority.HIGH -> NotificationCompat.PRIORITY_HIGH
+    NotificationPriority.MAX -> NotificationCompat.PRIORITY_MAX
 }
 
 fun NetworkValue.getSpeedValue(useBits: Boolean = false): String {

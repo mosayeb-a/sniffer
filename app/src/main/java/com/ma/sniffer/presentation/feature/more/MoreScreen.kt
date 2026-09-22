@@ -2,12 +2,14 @@ package com.ma.sniffer.presentation.feature.more
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -18,24 +20,31 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.rounded.Notes
 import androidx.compose.material.icons.rounded.BatteryAlert
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Notes
+import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.PowerSettingsNew
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -44,6 +53,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +71,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ma.sniffer.R
 import com.ma.sniffer.domain.model.Language
 import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationPriority
 import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.SpeedUnit
 import com.ma.sniffer.domain.model.StatusBarDisplay
@@ -69,6 +80,7 @@ import com.ma.sniffer.presentation.common.LocaleHelper
 import com.ma.sniffer.presentation.common.SelectionDialog
 import com.ma.sniffer.presentation.common.SettingsItem
 import org.koin.androidx.compose.koinViewModel
+import java.util.Locale
 
 @Composable
 fun MoreScreen(
@@ -84,6 +96,8 @@ fun MoreScreen(
     val language by viewModel.language.collectAsState()
     val notificationTheme by viewModel.notificationTheme.collectAsState()
     val notificationContent by viewModel.notificationContent.collectAsState()
+    val notificationPriority by viewModel.notificationPriority.collectAsState()
+    val notificationInterval by viewModel.notificationInterval.collectAsState()
 
     var isBatteryOptimizationDisabled by remember { mutableStateOf<Boolean?>(null) }
     var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
@@ -112,6 +126,8 @@ fun MoreScreen(
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showNotificationThemeDialog by remember { mutableStateOf(false) }
     var showNotificationContentDialog by remember { mutableStateOf(false) }
+    var showNotificationPriorityDialog by remember { mutableStateOf(false) }
+    var showNotificationIntervalDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -269,6 +285,42 @@ fun MoreScreen(
 
         item {
             SettingsItem(
+                icon = Icons.Rounded.NotificationsActive,
+                title = stringResource(R.string.notification_priority),
+                subtitle = notificationPriority?.let { stringResource(it.label) } ?: "",
+                onClick = { if (notificationPriority != null) showNotificationPriorityDialog = true },
+                enabled = notificationPriority != null,
+                trailing = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            )
+        }
+
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.Timer,
+                title = stringResource(R.string.notification_interval),
+                subtitle = notificationInterval?.let { formatInterval(it) } ?: "",
+                onClick = { if (notificationInterval != null) showNotificationIntervalDialog = true },
+                enabled = notificationInterval != null,
+                trailing = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            )
+        }
+
+        item {
+            SettingsItem(
                 icon = Icons.Rounded.PowerSettingsNew,
                 title = stringResource(R.string.boot),
                 subtitle = if (startOnBoot == true) {
@@ -315,10 +367,8 @@ fun MoreScreen(
                     null -> ""
                 },
                 onClick = {
-                    when (isBatteryOptimizationDisabled) {
-                        false -> showBatteryOptimizationDialog = true
-                        true -> openBatteryOptimizationSettings(context)
-                        null -> Unit
+                    if (isBatteryOptimizationDisabled != null) {
+                        showBatteryOptimizationDialog = true
                     }
                 },
                 enabled = isBatteryOptimizationDisabled != null,
@@ -331,6 +381,10 @@ fun MoreScreen(
                     )
                 }
             )
+        }
+
+        item{
+            Spacer(Modifier.height(24.dp))
         }
     }
 
@@ -372,6 +426,10 @@ fun MoreScreen(
                     if (lang != language) {
                         viewModel.setLanguage(lang)
                         LocaleHelper.setAppLocale(lang.code)
+
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                            (context as? android.app.Activity)?.recreate()
+                        }
                     }
                     showLanguageDialog = false
                 }
@@ -409,6 +467,94 @@ fun MoreScreen(
         )
     }
 
+    if (showNotificationPriorityDialog && notificationPriority != null) {
+        SelectionDialog(
+            title = stringResource(R.string.notification_priority),
+            options = NotificationPriority.entries,
+            selectedOption = notificationPriority,
+            onOptionSelected = { selected ->
+                viewModel.setNotificationPriority(selected!!)
+                showNotificationPriorityDialog = false
+            },
+            onDismiss = { showNotificationPriorityDialog = false },
+            displayName = { stringResource(it!!.label) }
+        )
+    }
+
+    if (showNotificationIntervalDialog && notificationInterval != null) {
+        val currentValue = notificationInterval!!.coerceIn(0.1f, 5f)
+        var sliderValue by remember(currentValue) { mutableFloatStateOf(currentValue) }
+
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
+            onDismissRequest = {
+                showNotificationIntervalDialog = false
+            },
+            title = {
+                Text(stringResource(R.string.notification_interval))
+            },
+            text = {
+                Column {
+                    Text(
+                        text = formatInterval(sliderValue),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Slider(
+                        value = sliderValue,
+                        onValueChange = { sliderValue = it },
+                        valueRange = 0.1f..5f,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                        )
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = formatInterval(0.1f),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            text = formatInterval(5f),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.setNotificationInterval(sliderValue)
+                        showNotificationIntervalDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text(stringResource(R.string.apply))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showNotificationIntervalDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     if (showBatteryOptimizationDialog) {
         AlertDialog(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -417,7 +563,28 @@ fun MoreScreen(
                 Text(stringResource(R.string.battery_optimization_dialog_title))
             },
             text = {
-                Text(stringResource(R.string.battery_optimization_dialog_message))
+                Column {
+                    Text(stringResource(R.string.battery_optimization_dialog_message))
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Rounded.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+
+                        Spacer(Modifier.width(6.dp))
+
+                        Text(
+                            text = stringResource(R.string.battery_optimization_huawei_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             },
             confirmButton = {
                 TextButton(
@@ -438,6 +605,16 @@ fun MoreScreen(
             }
         )
     }
+}
+
+@Composable
+private fun formatInterval(seconds: Float): String {
+    val number = if (seconds % 1f == 0f) {
+        seconds.toInt().toString()
+    } else {
+        String.format(Locale.US, "%.1f", seconds)
+    }
+    return stringResource(R.string.seconds_short, number)
 }
 
 private fun requestIgnoreBatteryOptimization(context: Context) {

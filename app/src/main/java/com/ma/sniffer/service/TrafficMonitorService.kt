@@ -10,6 +10,7 @@ import com.ma.sniffer.data.local.NetworkUsage
 import com.ma.sniffer.data.local.PreferencesManager
 import com.ma.sniffer.domain.SpeedCalculator
 import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationPriority
 import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.Speed
 import com.ma.sniffer.domain.model.SpeedUnit
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import org.koin.android.ext.android.inject
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class TrafficMonitorService : Service() {
     companion object {
@@ -38,6 +40,8 @@ class TrafficMonitorService : Service() {
     private var currentSpeedUnit = SpeedUnit.BYTES
     private var currentNotificationTheme = NotificationTheme.SYSTEM
     private var currentNotificationContent = NotificationContent.DOWNLOAD_UPLOAD
+    private var currentNotificationPriority = NotificationPriority.HIGH
+    private var currentNotificationInterval = 1.0f
 
     private var lastSavedRx = 0L
     private var lastSavedTx = 0L
@@ -54,6 +58,8 @@ class TrafficMonitorService : Service() {
             currentSpeedUnit = preferences.speedUnitFlow.first()
             currentNotificationTheme = preferences.notificationThemeFlow.first()
             currentNotificationContent = preferences.notificationContentFlow.first()
+            currentNotificationPriority = preferences.notificationPriorityFlow.first()
+            currentNotificationInterval = preferences.notificationIntervalFlow.first()
         }
 
         notificationManager = NotificationManager(this)
@@ -79,8 +85,7 @@ class TrafficMonitorService : Service() {
                 .collect { display ->
                     currentStatusBarDisplay = display
                     if (updateJob?.isActive == true) {
-                        val speed = speedCalculator.calculateSpeed()
-                        updateNotification(speed)
+                        updateNotification(speedCalculator.calculateSpeed())
                     }
                 }
         }
@@ -91,8 +96,7 @@ class TrafficMonitorService : Service() {
                 .collect { unit ->
                     currentSpeedUnit = unit
                     if (updateJob?.isActive == true) {
-                        val speed = speedCalculator.calculateSpeed()
-                        updateNotification(speed)
+                        updateNotification(speedCalculator.calculateSpeed())
                     }
                 }
         }
@@ -103,8 +107,7 @@ class TrafficMonitorService : Service() {
                 .collect { theme ->
                     currentNotificationTheme = theme
                     if (updateJob?.isActive == true) {
-                        val speed = speedCalculator.calculateSpeed()
-                        updateNotification(speed)
+                        updateNotification(speedCalculator.calculateSpeed())
                     }
                 }
         }
@@ -115,8 +118,29 @@ class TrafficMonitorService : Service() {
                 .collect { content ->
                     currentNotificationContent = content
                     if (updateJob?.isActive == true) {
-                        val speed = speedCalculator.calculateSpeed()
-                        updateNotification(speed)
+                        updateNotification(speedCalculator.calculateSpeed())
+                    }
+                }
+        }
+
+        serviceScope.launch {
+            preferences.notificationPriorityFlow
+                .distinctUntilChanged()
+                .collect { priority ->
+                    currentNotificationPriority = priority
+                    if (updateJob?.isActive == true) {
+                        updateNotification(speedCalculator.calculateSpeed())
+                    }
+                }
+        }
+
+        serviceScope.launch {
+            preferences.notificationIntervalFlow
+                .distinctUntilChanged()
+                .collect { seconds ->
+                    currentNotificationInterval = seconds
+                    if (updateJob?.isActive == true) {
+                        startNotificationUpdates()
                     }
                 }
         }
@@ -138,6 +162,8 @@ class TrafficMonitorService : Service() {
             currentSpeedUnit = preferences.speedUnitFlow.first()
             currentNotificationTheme = preferences.notificationThemeFlow.first()
             currentNotificationContent = preferences.notificationContentFlow.first()
+            currentNotificationPriority = preferences.notificationPriorityFlow.first()
+            currentNotificationInterval = preferences.notificationIntervalFlow.first()
         }
 
         try {
@@ -145,7 +171,8 @@ class TrafficMonitorService : Service() {
                 currentStatusBarDisplay,
                 currentSpeedUnit,
                 currentNotificationTheme,
-                currentNotificationContent
+                currentNotificationContent,
+                currentNotificationPriority
             )
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -160,19 +187,7 @@ class TrafficMonitorService : Service() {
         } catch (_: Exception) {
         }
 
-        updateJob?.cancel()
-        updateJob = null
-
-        updateJob = serviceScope.launch {
-            while (isActive) {
-                try {
-                    val speed = speedCalculator.calculateSpeed()
-                    updateNotification(speed)
-                } catch (_: Exception) {
-                }
-                delay(1000.milliseconds)
-            }
-        }
+        startNotificationUpdates()
 
         saveJob?.cancel()
         saveJob = null
@@ -184,6 +199,20 @@ class TrafficMonitorService : Service() {
                     saveNetworkUsage()
                 } catch (_: Exception) {
                 }
+            }
+        }
+    }
+
+    private fun startNotificationUpdates() {
+        updateJob?.cancel()
+        updateJob = serviceScope.launch {
+            while (isActive) {
+                try {
+                    val speed = speedCalculator.calculateSpeed()
+                    updateNotification(speed)
+                } catch (_: Exception) {
+                }
+                delay(currentNotificationInterval.toDouble().seconds)
             }
         }
     }
@@ -214,7 +243,8 @@ class TrafficMonitorService : Service() {
                 currentStatusBarDisplay,
                 currentSpeedUnit,
                 currentNotificationTheme,
-                currentNotificationContent
+                currentNotificationContent,
+                currentNotificationPriority
             )
         } catch (_: Exception) {
         }

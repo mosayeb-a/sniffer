@@ -59,7 +59,7 @@
     <string name="battery_optimization_subtitle_off">فعال</string>
     <string name="battery_optimization_dialog_title">بهینه‌سازی باتری</string>
     <string name="battery_optimization_dialog_message">برای اینکه نمایشگر ترافیک به‌طور پایدار در پس‌زمینه اجرا شود، لطفاً بهینه‌سازی باتری را برای این برنامه غیرفعال کنید.</string>
-    <string name="battery_optimization_dialog_confirm">باز کردن تنظیمات</string>
+    <string name="battery_optimization_dialog_confirm">غیرفعال کردن</string>
     <string name="battery_optimization_dialog_cancel">لغو</string>
 
     <string name="notification_theme">پوسته اعلان</string>
@@ -73,4 +73,18 @@
     <string name="notification_content_arrows">↓ | ↑</string>
 
     <string name="notification_short">دان %1$s   آپ %2$s</string>
+
+    <string name="battery_optimization_huawei_note">در دستگاه‌های هواوی و آنر، برای اجرای برنامه در پس‌زمینه، «مدیریت راه‌اندازی برنامه» را نیز در تنظیمات فعال کنید.</string>
+
+    <string name="notification_priority">اولویت نوتیفیکیشن</string>
+    <string name="notification_interval">فاصله‌ی بروزرسانی</string>
+
+    <string name="priority_low">کم</string>
+    <string name="priority_default">پیش‌فرض</string>
+    <string name="priority_high">بالا</string>
+    <string name="priority_max">حداکثر</string>
+
+    <string name="seconds_short">%1$s ثانیه</string>
+
+    <string name="apply">اعمال</string>
 </resources>

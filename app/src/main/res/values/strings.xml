@@ -59,7 +59,7 @@
     <string name="battery_optimization_subtitle_off">Enabled</string>
     <string name="battery_optimization_dialog_title">Battery optimization</string>
     <string name="battery_optimization_dialog_message">To ensure the traffic monitor keeps running reliably in the background, please disable battery optimization for this app.</string>
-    <string name="battery_optimization_dialog_confirm">Open settings</string>
+    <string name="battery_optimization_dialog_confirm">Disable</string>
     <string name="battery_optimization_dialog_cancel">Cancel</string>
 
     <string name="notification_theme">Notification theme</string>
@@ -73,4 +73,18 @@
     <string name="notification_content_arrows">↓ | ↑</string>
 
     <string name="notification_short">Down %1$s   Up %2$s</string>
+
+    <string name="battery_optimization_huawei_note">On Huawei and Honor devices, also enable "App launch management" in Settings to keep the app running in the background.</string>
+
+    <string name="notification_priority">Notification priority</string>
+    <string name="notification_interval">Update interval</string>
+
+    <string name="priority_low">Low</string>
+    <string name="priority_default">Default</string>
+    <string name="priority_high">High</string>
+    <string name="priority_max">Max</string>
+
+    <string name="seconds_short">%1$s s</string>
+
+    <string name="apply">Apply</string>
 </resources>

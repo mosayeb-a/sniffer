@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ma.sniffer.data.local.PreferencesManager
 import com.ma.sniffer.domain.model.Language
 import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationPriority
 import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.SpeedUnit
 import com.ma.sniffer.domain.model.StatusBarDisplay
@@ -36,69 +37,69 @@ class MoreViewModel(
     private val _notificationContent = MutableStateFlow<NotificationContent?>(null)
     val notificationContent: StateFlow<NotificationContent?> = _notificationContent
 
+    private val _notificationPriority = MutableStateFlow<NotificationPriority?>(null)
+    val notificationPriority: StateFlow<NotificationPriority?> = _notificationPriority
+
+    private val _notificationInterval = MutableStateFlow<Float?>(null)
+    val notificationInterval: StateFlow<Float?> = _notificationInterval
+
     init {
         viewModelScope.launch {
-            dataStore.statusBarDisplayFlow
-                .collectLatest { display ->
-                    _statusBarDisplay.update { display }
-                }
-        }
-
-        viewModelScope.launch {
-            dataStore.speedUnitFlow
-                .collectLatest { unit ->
-                    _speedUnit.update { unit }
-                }
-        }
-
-        viewModelScope.launch {
-            dataStore.startOnBootFlow
-                .collectLatest { enabled ->
-                    _startOnBoot.update { enabled }
-                }
-        }
-
-        viewModelScope.launch {
-            dataStore.languageFlow
-                .collectLatest { lang ->
-                    _language.update { lang }
-                }
-        }
-
-        viewModelScope.launch {
-            dataStore.notificationThemeFlow.collectLatest { theme ->
-                _notificationTheme.update { theme }
+            dataStore.statusBarDisplayFlow.collectLatest { value ->
+                _statusBarDisplay.update { value }
             }
         }
         viewModelScope.launch {
-            dataStore.notificationContentFlow.collectLatest { content ->
-                _notificationContent.update { content }
+            dataStore.speedUnitFlow.collectLatest { value ->
+                _speedUnit.update { value }
+            }
+        }
+        viewModelScope.launch {
+            dataStore.startOnBootFlow.collectLatest { value ->
+                _startOnBoot.update { value }
+            }
+        }
+        viewModelScope.launch {
+            dataStore.languageFlow.collectLatest { value ->
+                _language.update { value }
+            }
+        }
+        viewModelScope.launch {
+            dataStore.notificationThemeFlow.collectLatest { value ->
+                _notificationTheme.update { value }
+            }
+        }
+        viewModelScope.launch {
+            dataStore.notificationContentFlow.collectLatest { value ->
+                _notificationContent.update { value }
+            }
+        }
+        viewModelScope.launch {
+            dataStore.notificationPriorityFlow.collectLatest { value ->
+                _notificationPriority.update { value }
+            }
+        }
+        viewModelScope.launch {
+            dataStore.notificationIntervalFlow.collectLatest { value ->
+                _notificationInterval.update { value }
             }
         }
     }
 
     fun setStatusBarDisplay(display: StatusBarDisplay) {
-        viewModelScope.launch {
-            dataStore.setStatusBarDisplay(display)
-        }
+        viewModelScope.launch { dataStore.setStatusBarDisplay(display) }
     }
 
     fun setSpeedUnit(unit: SpeedUnit) {
-        viewModelScope.launch {
-            dataStore.setSpeedUnit(unit)
-        }
+        viewModelScope.launch { dataStore.setSpeedUnit(unit) }
     }
 
     fun setStartOnBoot(enabled: Boolean) {
-        viewModelScope.launch {
-            dataStore.setStartOnBoot(enabled)
-        }
+        viewModelScope.launch { dataStore.setStartOnBoot(enabled) }
     }
 
     fun setLanguage(lang: Language) {
-        viewModelScope.launch {
-            dataStore.setLanguage(lang)
-        }
+        viewModelScope.launch { dataStore.setLanguage(lang) }
     }
 
     fun setNotificationTheme(theme: NotificationTheme) {
@@ -107,5 +108,13 @@ class MoreViewModel(
 
     fun setNotificationContent(content: NotificationContent) {
         viewModelScope.launch { dataStore.setNotificationContent(content) }
+    }
+
+    fun setNotificationPriority(priority: NotificationPriority) {
+        viewModelScope.launch { dataStore.setNotificationPriority(priority) }
+    }
+
+    fun setNotificationInterval(seconds: Float) {
+        viewModelScope.launch { dataStore.setNotificationInterval(seconds) }
     }
 }

@@ -4,10 +4,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ma.sniffer.domain.model.Language
-import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.NotificationContent
+import com.ma.sniffer.domain.model.NotificationPriority
+import com.ma.sniffer.domain.model.NotificationTheme
 import com.ma.sniffer.domain.model.SpeedUnit
 import com.ma.sniffer.domain.model.StatusBarDisplay
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +26,10 @@ class PreferencesManager(
         private val KEY_LANGUAGE = stringPreferencesKey("language")
         private val KEY_NOTIFICATION_THEME = stringPreferencesKey("notification_theme")
         private val KEY_NOTIFICATION_CONTENT = stringPreferencesKey("notification_content")
+        private val KEY_NOTIFICATION_PRIORITY = stringPreferencesKey("notification_priority")
+        private val KEY_NOTIFICATION_INTERVAL = floatPreferencesKey("notification_interval_seconds")
+
+        private const val DEFAULT_INTERVAL = 1.0f
     }
 
     val isRunningFlow: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -68,6 +74,14 @@ class PreferencesManager(
         NotificationContent.fromCode(preferences[KEY_NOTIFICATION_CONTENT])
     }
 
+    val notificationPriorityFlow: Flow<NotificationPriority> = dataStore.data.map { preferences ->
+        NotificationPriority.fromCode(preferences[KEY_NOTIFICATION_PRIORITY])
+    }
+
+    val notificationIntervalFlow: Flow<Float> = dataStore.data.map { preferences ->
+        preferences[KEY_NOTIFICATION_INTERVAL] ?: DEFAULT_INTERVAL
+    }
+
     suspend fun setRunning(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_MONITORING] = enabled
@@ -104,5 +118,15 @@ class PreferencesManager(
 
     suspend fun setNotificationContent(content: NotificationContent) {
         dataStore.edit { it[KEY_NOTIFICATION_CONTENT] = content.code }
+    }
+
+    suspend fun setNotificationPriority(priority: NotificationPriority) {
+        dataStore.edit { it[KEY_NOTIFICATION_PRIORITY] = priority.code }
+    }
+
+    suspend fun setNotificationInterval(seconds: Float) {
+        dataStore.edit {
+            it[KEY_NOTIFICATION_INTERVAL] = seconds
+        }
     }
 }
