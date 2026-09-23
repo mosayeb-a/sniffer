@@ -33,7 +33,7 @@ fun SettingsItem(
             .fillMaxWidth()
             .heightIn(min = 64.dp)
             .alpha(alpha)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .background(MaterialTheme.colorScheme.surface)
             .then(
                 if (enabled) {
                     Modifier.clickable(
@@ -44,9 +44,7 @@ fun SettingsItem(
                         ),
                         interactionSource = remember { MutableInteractionSource() }
                     )
-                } else {
-                    Modifier
-                }
+                } else Modifier
             )
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -60,24 +58,19 @@ fun SettingsItem(
                 imageVector = icon,
                 contentDescription = null,
                 tint = if (enabled) {
-                    iconTint ?: MaterialTheme.colorScheme.primary
+                    iconTint ?: MaterialTheme.colorScheme.onSurfaceVariant
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
                 modifier = Modifier.size(24.dp)
             )
 
-            Column(
-                verticalArrangement = Arrangement.Center
-            ) {
+            Column(verticalArrangement = Arrangement.Center) {
                 Text(
                     text = title,
                     fontSize = 15.sp,
-                    color = if (enabled) {
-                        MaterialTheme.colorScheme.onSurface
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Text(

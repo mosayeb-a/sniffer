@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.ma.sniffer.AppDatabase
+import com.ma.sniffer.MainViewModel
 import com.ma.sniffer.data.local.PreferencesManager
 import com.ma.sniffer.data.repository.FakeNetworkUsageRepository
 import com.ma.sniffer.data.repository.NetworkUsageRepositoryImpl
@@ -28,4 +29,5 @@ val appModule = module {
 
     viewModel { UsageViewModel(get(), get()) }
     viewModel { MoreViewModel(get()) }
+    viewModel { MainViewModel(get()) }
 }

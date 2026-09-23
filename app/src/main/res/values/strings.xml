@@ -11,9 +11,9 @@
     <string name="more">More</string>
     <string name="status_bar">Status Bar</string>
     <string name="speed">Speed</string>
-    <string name="boot">Boot</string>
-    <string name="boot_subtitle_on">Auto-start after reboot</string>
-    <string name="boot_subtitle_off">Manual start only</string>
+    <string name="boot">Start on boot</string>
+    <string name="boot_subtitle_on">Starts automatically after restart</string>
+    <string name="boot_subtitle_off">Starts only when opened manually</string>
     <string name="language">Language</string>
 
     <string name="total_speed">Total Speed</string>
@@ -87,4 +87,12 @@
     <string name="seconds_short">%1$s s</string>
 
     <string name="apply">Apply</string>
+
+    <string name="app_theme">App theme</string>
+    <string name="app_theme_light">Light</string>
+    <string name="app_theme_dark">Dark</string>
+    <string name="app_theme_system">System</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="section_notification">Notification</string>
+    <string name="section_behavior">Behavior</string>
 </resources>

@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,6 +70,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ma.sniffer.R
+import com.ma.sniffer.domain.model.AppTheme
 import com.ma.sniffer.domain.model.Language
 import com.ma.sniffer.domain.model.NotificationContent
 import com.ma.sniffer.domain.model.NotificationPriority
@@ -81,23 +83,27 @@ import com.ma.sniffer.presentation.common.SelectionDialog
 import com.ma.sniffer.presentation.common.SettingsItem
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.ma.sniffer.MainViewModel
 
 @Composable
 fun MoreScreen(
-    viewModel: MoreViewModel = koinViewModel(),
+    moreViewModel: MoreViewModel = koinViewModel(),
+    mainViewModel: MainViewModel = koinViewModel(),
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val statusBarDisplay by viewModel.statusBarDisplay.collectAsState()
-    val speedUnit by viewModel.speedUnit.collectAsState()
-    val startOnBoot by viewModel.startOnBoot.collectAsState()
-    val language by viewModel.language.collectAsState()
-    val notificationTheme by viewModel.notificationTheme.collectAsState()
-    val notificationContent by viewModel.notificationContent.collectAsState()
-    val notificationPriority by viewModel.notificationPriority.collectAsState()
-    val notificationInterval by viewModel.notificationInterval.collectAsState()
+    val statusBarDisplay by moreViewModel.statusBarDisplay.collectAsState()
+    val speedUnit by moreViewModel.speedUnit.collectAsState()
+    val startOnBoot by moreViewModel.startOnBoot.collectAsState()
+    val language by moreViewModel.language.collectAsState()
+    val notificationTheme by moreViewModel.notificationTheme.collectAsState()
+    val notificationContent by moreViewModel.notificationContent.collectAsState()
+    val notificationPriority by moreViewModel.notificationPriority.collectAsState()
+    val notificationInterval by moreViewModel.notificationInterval.collectAsState()
+    val appTheme by mainViewModel.appTheme.collectAsState()
 
     var isBatteryOptimizationDisabled by remember { mutableStateOf<Boolean?>(null) }
     var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
@@ -124,13 +130,23 @@ fun MoreScreen(
     var showStatusBarChoiceDialog by remember { mutableStateOf(false) }
     var showSpeedUnitDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showAppThemeDialog by remember { mutableStateOf(false) }
     var showNotificationThemeDialog by remember { mutableStateOf(false) }
     var showNotificationContentDialog by remember { mutableStateOf(false) }
     var showNotificationPriorityDialog by remember { mutableStateOf(false) }
     var showNotificationIntervalDialog by remember { mutableStateOf(false) }
 
+    val isDark = when (appTheme) {
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+        AppTheme.SYSTEM, null -> isSystemInDarkTheme()
+    }
+
+
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
@@ -159,93 +175,78 @@ fun MoreScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
+                Image(
+                    painter = painterResource(
+                        if (isDark) R.drawable.rooster_dark else R.drawable.rooster_light
+                    ),
+                    contentDescription = null,
                     modifier = Modifier
                         .padding(top = 28.dp)
                         .size(58.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.rooster),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.FillBounds
-                    )
-                }
+                    contentScale = ContentScale.Fit
+                )
 
                 Spacer(Modifier.height(24.dp))
                 HorizontalDivider(
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = .15f),
-                    thickness = 1.5.dp
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    thickness = 1.dp
                 )
             }
         }
 
-        item {
-            SettingsItem(
-                icon = Icons.Rounded.Visibility,
-                title = stringResource(R.string.status_bar),
-                subtitle = statusBarDisplay?.let { stringResource(it.label) } ?: "",
-                onClick = {
-                    if (statusBarDisplay != null) {
-                        showStatusBarChoiceDialog = true
-                    }
-                },
-                enabled = statusBarDisplay != null,
-                trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            )
-        }
-
-        item {
-            SettingsItem(
-                icon = Icons.Rounded.Speed,
-                title = stringResource(R.string.speed),
-                subtitle = speedUnit?.let { stringResource(it.label) } ?: "",
-                onClick = {
-                    if (speedUnit != null) {
-                        showSpeedUnitDialog = true
-                    }
-                },
-                enabled = speedUnit != null,
-                trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            )
-        }
+        item { SectionHeader(stringResource(R.string.section_appearance)) }
 
         item {
             SettingsItem(
                 icon = Icons.Rounded.Language,
                 title = stringResource(R.string.language),
                 subtitle = language?.let { stringResource(it.label) } ?: "",
-                onClick = {
-                    if (language != null) {
-                        showLanguageDialog = true
-                    }
-                },
+                onClick = { if (language != null) showLanguageDialog = true },
                 enabled = language != null,
-                trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                trailing = { ChevronIcon() }
             )
         }
+
+        item { ItemDivider() }
+
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.Palette,
+                title = stringResource(R.string.app_theme),
+                subtitle = appTheme?.let { stringResource(it.label) } ?: "",
+                onClick = { if (appTheme != null) showAppThemeDialog = true },
+                enabled = appTheme != null,
+                trailing = { ChevronIcon() }
+            )
+        }
+
+        item { SectionHeader(stringResource(R.string.section_notification)) }
+
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.Visibility,
+                title = stringResource(R.string.status_bar),
+                subtitle = statusBarDisplay?.let { stringResource(it.label) } ?: "",
+                onClick = { if (statusBarDisplay != null) showStatusBarChoiceDialog = true },
+                enabled = statusBarDisplay != null,
+                trailing = { ChevronIcon() }
+            )
+        }
+
+        item { ItemDivider() }
+
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.Speed,
+                title = stringResource(R.string.speed),
+                subtitle = speedUnit?.let { stringResource(it.label) } ?: "",
+                onClick = { if (speedUnit != null) showSpeedUnitDialog = true },
+                enabled = speedUnit != null,
+                trailing = { ChevronIcon() }
+            )
+        }
+
+        item { ItemDivider() }
 
         item {
             SettingsItem(
@@ -254,16 +255,11 @@ fun MoreScreen(
                 subtitle = notificationTheme?.let { stringResource(it.label) } ?: "",
                 onClick = { if (notificationTheme != null) showNotificationThemeDialog = true },
                 enabled = notificationTheme != null,
-                trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                trailing = { ChevronIcon() }
             )
         }
+
+        item { ItemDivider() }
 
         item {
             SettingsItem(
@@ -272,90 +268,41 @@ fun MoreScreen(
                 subtitle = notificationContent?.let { stringResource(it.label) } ?: "",
                 onClick = { if (notificationContent != null) showNotificationContentDialog = true },
                 enabled = notificationContent != null,
-                trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                trailing = { ChevronIcon() }
             )
         }
+
+        item { ItemDivider() }
 
         item {
             SettingsItem(
                 icon = Icons.Rounded.NotificationsActive,
                 title = stringResource(R.string.notification_priority),
                 subtitle = notificationPriority?.let { stringResource(it.label) } ?: "",
-                onClick = { if (notificationPriority != null) showNotificationPriorityDialog = true },
+                onClick = {
+                    if (notificationPriority != null) showNotificationPriorityDialog = true
+                },
                 enabled = notificationPriority != null,
-                trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                trailing = { ChevronIcon() }
             )
         }
+
+        item { ItemDivider() }
 
         item {
             SettingsItem(
                 icon = Icons.Rounded.Timer,
                 title = stringResource(R.string.notification_interval),
                 subtitle = notificationInterval?.let { formatInterval(it) } ?: "",
-                onClick = { if (notificationInterval != null) showNotificationIntervalDialog = true },
-                enabled = notificationInterval != null,
-                trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            )
-        }
-
-        item {
-            SettingsItem(
-                icon = Icons.Rounded.PowerSettingsNew,
-                title = stringResource(R.string.boot),
-                subtitle = if (startOnBoot == true) {
-                    stringResource(R.string.boot_subtitle_on)
-                } else {
-                    stringResource(R.string.boot_subtitle_off)
-                },
                 onClick = {
-                    if (startOnBoot != null) {
-                        viewModel.setStartOnBoot(!(startOnBoot!!))
-                    }
+                    if (notificationInterval != null) showNotificationIntervalDialog = true
                 },
-                enabled = startOnBoot != null,
-                trailing = {
-                    val isChecked = startOnBoot ?: false
-                    val enabled = startOnBoot != null
-
-                    Switch(
-                        checked = isChecked,
-                        onCheckedChange = {
-                            viewModel.setStartOnBoot(it)
-                        },
-                        enabled = enabled,
-                        colors = SwitchDefaults.colors(
-                            uncheckedThumbColor = MaterialTheme.colorScheme.surfaceVariant,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                alpha = 0.2f
-                            ),
-                            uncheckedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            uncheckedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    )
-                }
+                enabled = notificationInterval != null,
+                trailing = { ChevronIcon() }
             )
         }
+
+        item { SectionHeader(stringResource(R.string.section_behavior)) }
 
         item {
             SettingsItem(
@@ -372,20 +319,49 @@ fun MoreScreen(
                     }
                 },
                 enabled = isBatteryOptimizationDisabled != null,
+                trailing = { ChevronIcon() }
+            )
+        }
+
+        item { ItemDivider() }
+
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.PowerSettingsNew,
+                title = stringResource(R.string.boot),
+                subtitle = if (startOnBoot == true) {
+                    stringResource(R.string.boot_subtitle_on)
+                } else {
+                    stringResource(R.string.boot_subtitle_off)
+                },
+                onClick = {
+                    if (startOnBoot != null) {
+                        moreViewModel.setStartOnBoot(!(startOnBoot!!))
+                    }
+                },
+                enabled = startOnBoot != null,
                 trailing = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
+                    val isChecked = startOnBoot ?: false
+                    val enabled = startOnBoot != null
+
+                    Switch(
+                        checked = isChecked,
+                        onCheckedChange = { moreViewModel.setStartOnBoot(it) },
+                        enabled = enabled,
+                        colors = SwitchDefaults.colors(
+                            uncheckedThumbColor = MaterialTheme.colorScheme.surfaceVariant,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.2f
+                            ),
+                            uncheckedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            uncheckedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     )
                 }
             )
         }
 
-        item{
-            Spacer(Modifier.height(24.dp))
-        }
+        item { Spacer(Modifier.height(48.dp)) }
     }
 
     if (showStatusBarChoiceDialog && statusBarDisplay != null) {
@@ -394,7 +370,7 @@ fun MoreScreen(
             options = StatusBarDisplay.entries,
             selectedOption = statusBarDisplay,
             onOptionSelected = { selected ->
-                viewModel.setStatusBarDisplay(selected!!)
+                moreViewModel.setStatusBarDisplay(selected!!)
                 showStatusBarChoiceDialog = false
             },
             onDismiss = { showStatusBarChoiceDialog = false },
@@ -408,7 +384,7 @@ fun MoreScreen(
             options = SpeedUnit.entries,
             selectedOption = speedUnit,
             onOptionSelected = { selected ->
-                viewModel.setSpeedUnit(selected!!)
+                moreViewModel.setSpeedUnit(selected!!)
                 showSpeedUnitDialog = false
             },
             onDismiss = { showSpeedUnitDialog = false },
@@ -424,9 +400,8 @@ fun MoreScreen(
             onOptionSelected = { selected ->
                 selected?.let { lang ->
                     if (lang != language) {
-                        viewModel.setLanguage(lang)
+                        moreViewModel.setLanguage(lang)
                         LocaleHelper.setAppLocale(lang.code)
-
                         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                             (context as? android.app.Activity)?.recreate()
                         }
@@ -439,13 +414,27 @@ fun MoreScreen(
         )
     }
 
+    if (showAppThemeDialog && appTheme != null) {
+        SelectionDialog(
+            title = stringResource(R.string.app_theme),
+            options = AppTheme.entries,
+            selectedOption = appTheme,
+            onOptionSelected = { selected ->
+                moreViewModel.setAppTheme(selected!!)
+                showAppThemeDialog = false
+            },
+            onDismiss = { showAppThemeDialog = false },
+            displayName = { stringResource(it!!.label) }
+        )
+    }
+
     if (showNotificationThemeDialog && notificationTheme != null) {
         SelectionDialog(
             title = stringResource(R.string.notification_theme),
             options = NotificationTheme.entries,
             selectedOption = notificationTheme,
             onOptionSelected = { selected ->
-                viewModel.setNotificationTheme(selected!!)
+                moreViewModel.setNotificationTheme(selected!!)
                 showNotificationThemeDialog = false
             },
             onDismiss = { showNotificationThemeDialog = false },
@@ -459,7 +448,7 @@ fun MoreScreen(
             options = NotificationContent.entries,
             selectedOption = notificationContent,
             onOptionSelected = { selected ->
-                viewModel.setNotificationContent(selected!!)
+                moreViewModel.setNotificationContent(selected!!)
                 showNotificationContentDialog = false
             },
             onDismiss = { showNotificationContentDialog = false },
@@ -473,7 +462,7 @@ fun MoreScreen(
             options = NotificationPriority.entries,
             selectedOption = notificationPriority,
             onOptionSelected = { selected ->
-                viewModel.setNotificationPriority(selected!!)
+                moreViewModel.setNotificationPriority(selected!!)
                 showNotificationPriorityDialog = false
             },
             onDismiss = { showNotificationPriorityDialog = false },
@@ -487,9 +476,7 @@ fun MoreScreen(
 
         AlertDialog(
             containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = {
-                showNotificationIntervalDialog = false
-            },
+            onDismissRequest = { showNotificationIntervalDialog = false },
             title = {
                 Text(stringResource(R.string.notification_interval))
             },
@@ -510,7 +497,9 @@ fun MoreScreen(
                         colors = SliderDefaults.colors(
                             thumbColor = MaterialTheme.colorScheme.primary,
                             activeTrackColor = MaterialTheme.colorScheme.primary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            inactiveTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.2f
+                            )
                         )
                     )
 
@@ -532,7 +521,7 @@ fun MoreScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.setNotificationInterval(sliderValue)
+                        moreViewModel.setNotificationInterval(sliderValue)
                         showNotificationIntervalDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(
@@ -544,11 +533,7 @@ fun MoreScreen(
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = {
-                        showNotificationIntervalDialog = false
-                    }
-                ) {
+                TextButton(onClick = { showNotificationIntervalDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -575,9 +560,7 @@ fun MoreScreen(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
-
                         Spacer(Modifier.width(6.dp))
-
                         Text(
                             text = stringResource(R.string.battery_optimization_huawei_note),
                             style = MaterialTheme.typography.bodySmall,
@@ -597,14 +580,41 @@ fun MoreScreen(
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showBatteryOptimizationDialog = false }
-                ) {
+                TextButton(onClick = { showBatteryOptimizationDialog = false }) {
                     Text(stringResource(R.string.battery_optimization_dialog_cancel))
                 }
             }
         )
     }
+}
+
+@Composable
+private fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 10.dp)
+    )
+}
+
+@Composable
+private fun ChevronIcon() {
+    Icon(
+        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(20.dp)
+    )
+}
+@Composable
+private fun ItemDivider() {
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.09f),
+        thickness = 0.5.dp,
+    )
 }
 
 @Composable

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.ma.sniffer.domain.model.AppTheme
 import com.ma.sniffer.domain.model.Language
 import com.ma.sniffer.domain.model.NotificationContent
 import com.ma.sniffer.domain.model.NotificationPriority
@@ -28,6 +29,7 @@ class PreferencesManager(
         private val KEY_NOTIFICATION_CONTENT = stringPreferencesKey("notification_content")
         private val KEY_NOTIFICATION_PRIORITY = stringPreferencesKey("notification_priority")
         private val KEY_NOTIFICATION_INTERVAL = floatPreferencesKey("notification_interval_seconds")
+        private val KEY_APP_THEME = stringPreferencesKey("app_theme")
 
         private const val DEFAULT_INTERVAL = 1.0f
     }
@@ -64,6 +66,10 @@ class PreferencesManager(
             Language.SYSTEM.code -> Language.SYSTEM
             else -> Language.fromCode(savedLanguage)
         }
+    }
+
+    val appThemeFlow: Flow<AppTheme> = dataStore.data.map { preferences ->
+        AppTheme.fromCode(preferences[KEY_APP_THEME])
     }
 
     val notificationThemeFlow: Flow<NotificationTheme> = dataStore.data.map { preferences ->
@@ -122,6 +128,10 @@ class PreferencesManager(
 
     suspend fun setNotificationPriority(priority: NotificationPriority) {
         dataStore.edit { it[KEY_NOTIFICATION_PRIORITY] = priority.code }
+    }
+
+    suspend fun setAppTheme(theme: AppTheme) {
+        dataStore.edit { it[KEY_APP_THEME] = theme.code }
     }
 
     suspend fun setNotificationInterval(seconds: Float) {

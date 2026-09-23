@@ -11,9 +11,9 @@
     <string name="more">بیشتر</string>
     <string name="status_bar">نوار وضعیت</string>
     <string name="speed">سرعت</string>
-    <string name="boot">بوت</string>
-    <string name="boot_subtitle_on">شروع خودکار پس از راه‌اندازی مجدد</string>
-    <string name="boot_subtitle_off">فقط شروع دستی</string>
+    <string name="boot">شروع خودکار</string>
+    <string name="boot_subtitle_on">اجرای خودکار پس از راه‌اندازی</string>
+    <string name="boot_subtitle_off">فقط با اجرای دستی باز می‌شود</string>
     <string name="language">زبان</string>
 
     <string name="total_speed">سرعت کل</string>
@@ -87,4 +87,12 @@
     <string name="seconds_short">%1$s ثانیه</string>
 
     <string name="apply">اعمال</string>
+
+    <string name="app_theme">پوسته‌ی برنامه</string>
+    <string name="app_theme_light">روشن</string>
+    <string name="app_theme_dark">تیره</string>
+    <string name="app_theme_system">سیستم</string>
+    <string name="section_appearance">ظاهر</string>
+    <string name="section_notification">نوتیفیکیشن</string>
+    <string name="section_behavior">رفتار</string>
 </resources>

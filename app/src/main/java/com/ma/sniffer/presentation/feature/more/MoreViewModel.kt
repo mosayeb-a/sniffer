@@ -3,6 +3,7 @@ package com.ma.sniffer.presentation.feature.more
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ma.sniffer.data.local.PreferencesManager
+import com.ma.sniffer.domain.model.AppTheme
 import com.ma.sniffer.domain.model.Language
 import com.ma.sniffer.domain.model.NotificationContent
 import com.ma.sniffer.domain.model.NotificationPriority
@@ -116,5 +117,9 @@ class MoreViewModel(
 
     fun setNotificationInterval(seconds: Float) {
         viewModelScope.launch { dataStore.setNotificationInterval(seconds) }
+    }
+
+    fun setAppTheme(theme: AppTheme) {
+        viewModelScope.launch { dataStore.setAppTheme(theme) }
     }
 }

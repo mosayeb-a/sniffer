@@ -12,14 +12,26 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.ma.sniffer.domain.model.AppTheme
 import com.ma.sniffer.presentation.navigation.Navigation
 import com.ma.sniffer.presentation.theme.SnifferTheme
 import com.ma.sniffer.service.TrafficMonitorService
+import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,10 +43,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
-        )
+
+        // Prevent a white flash before Compose takes over.
+        window.setBackgroundDrawableResource(android.R.color.transparent)
 
         checkPermissionState()
 
@@ -43,11 +54,49 @@ class MainActivity : AppCompatActivity() {
         }
 
         setContent {
-            SnifferTheme {
-                Navigation(
-                    hasPermission = hasNotificationPermission,
-                    onRequestPermission = { requestNotificationPermission() }
+            val mainViewModel: MainViewModel = koinViewModel()
+            val appTheme by mainViewModel.appTheme.collectAsState()
+
+            val darkTheme = when (appTheme) {
+                AppTheme.LIGHT -> false
+                AppTheme.DARK -> true
+                AppTheme.SYSTEM -> isSystemInDarkTheme()
+                null -> isSystemInDarkTheme()
+            }
+
+            SideEffect {
+                enableEdgeToEdge(
+                    statusBarStyle = if (darkTheme) {
+                        SystemBarStyle.dark(Color.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                    },
+                    navigationBarStyle = if (darkTheme) {
+                        SystemBarStyle.dark(Color.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                    }
                 )
+            }
+
+            SnifferTheme(darkTheme = darkTheme) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                ) {
+                    if (appTheme == null) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Navigation(
+                            hasPermission = hasNotificationPermission,
+                            onRequestPermission = { requestNotificationPermission() }
+                        )
+                    }
+                }
             }
         }
     }
